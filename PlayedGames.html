@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gaming Genres Radar Chart</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #1e3749;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    textarea {
+      width: 100%;
+      max-width: 500px;
+      height: 150px;
+      margin-bottom: 20px;
+      padding: 10px;
+      border-radius: 5px;
+      border: none;
+      resize: none;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    canvas {
+      background: #0d2a3d;
+      border-radius: 10px;
+      padding: 20px;
+    }
+
+    footer {
+      margin-top: 20px;
+      font-size: 14px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1 id="title">Eres lo que juegas</h1>
+  <p id="instructions">Introduce una lista de juegos con el formato: <em>NombreJuego, HorasJugadas, Género</em></p>
+  <textarea id="gamesInput" placeholder="Ejemplo:
+  Black Myth Wukong, 43, Acción Aventura
+  Metaphor Refantazio, 78, RPG"></textarea>
+  <button onclick="generateChart()" id="generateButton">Generar gráfico</button>
+  <canvas id="radarChart" width="400" height="400"></canvas>
+
+  <footer>Developed by El Gato Fiestero 2024</footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const translations = {
+      en: {
+        title: "You Are What You Play",
+        instructions: "Enter a list of games in the format: NameGame, HoursPlayed, Genre",
+        generateButton: "Generate Chart",
+      },
+      fr: {
+        title: "Vous êtes ce que vous jouez",
+        instructions: "Entrez une liste de jeux au format : NomJeu, HeuresJouées, Genre",
+        generateButton: "Générer le graphique",
+      },
+      ru: {
+        title: "Вы — то, во что играете",
+        instructions: "Введите список игр в формате: НазваниеИгры, ЧасыИгры, Жанр",
+        generateButton: "Создать график",
+      },
+      de: {
+        title: "Du bist, was du spielst",
+        instructions: "Geben Sie eine Liste von Spielen im Format ein: SpielName, GespielteStunden, Genre",
+        generateButton: "Diagramm erstellen",
+      },
+      zh: {
+        title: "你就是你玩的游戏",
+        instructions: "输入游戏列表，格式为：游戏名称, 游戏时间, 类型",
+        generateButton: "生成图表",
+      },
+      ja: {
+        title: "遊ぶゲームがあなたを表します",
+        instructions: "形式でゲームのリストを入力してください: ゲーム名, プレイ時間, ジャンル",
+        generateButton: "グラフを生成",
+      },
+      es: {
+        title: "Eres lo que juegas",
+        instructions: "Introduce una lista de juegos con el formato: NombreJuego, HorasJugadas, Género",
+        generateButton: "Generar gráfico",
+      },
+      it: {
+        title: "Sei quello che giochi",
+        instructions: "Inserisci un elenco di giochi nel formato: NomeGioco, OreGiocate, Genere",
+        generateButton: "Genera grafico",
+      },
+    };
+
+    function detectLanguage() {
+      const userLang = navigator.language.slice(0, 2);
+      return translations[userLang] ? userLang : "en";
+    }
+
+    function translatePage() {
+      const lang = detectLanguage();
+      const t = translations[lang];
+      document.getElementById("title").textContent = t.title;
+      document.getElementById("instructions").textContent = t.instructions;
+      document.getElementById("generateButton").textContent = t.generateButton;
+    }
+
+    translatePage();
+
+    // Inicializar un gráfico con un hexágono vacío
+    const ctx = document.getElementById('radarChart').getContext('2d');
+    const placeholderLabels = ['Placeholder 1', 'Placeholder 2', 'Placeholder 3', 'Placeholder 4', 'Placeholder 5', 'Placeholder 6'];
+    const placeholderData = [10, 10, 10, 10, 10, 10];
+
+    window.myRadarChart = new Chart(ctx, {
+      type: 'radar',
+      data: {
+        labels: placeholderLabels,
+        datasets: [
+          {
+            label: 'Horas jugadas por género',
+            data: placeholderData,
+            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            borderColor: 'rgba(255, 99, 132, 1)',
+            borderWidth: 2
+          }
+        ]
+      },
+      options: {
+        plugins: {
+          legend: {
+            display: true
+          }
+        },
+        scales: {
+          r: {
+            angleLines: {
+              color: '#3e5361'
+            },
+            grid: {
+              color: '#3e5361'
+            },
+            ticks: {
+              display: false
+            },
+            suggestedMin: 0,
+            suggestedMax: 100
+          }
+        }
+      }
+    });
+
+    function generateChart() {
+      const input = document.getElementById('gamesInput').value;
+      const lines = input.split('\n');
+      const genreData = {};
+
+      // Procesar los datos
+      lines.forEach(line => {
+        const [name, hours, genre] = line.split(',').map(s => s.trim());
+        if (genre) {
+          genreData[genre] = (genreData[genre] || 0) + parseInt(hours, 10);
+        }
+      });
+
+      // Obtener los primeros 6 géneros ordenados por horas jugadas
+      const sortedGenres = Object.entries(genreData)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 6);
+
+      const labels = sortedGenres.map(([genre]) => genre);
+      const data = sortedGenres.map(([, hours]) => hours);
+
+      // Asegurar que siempre haya 6 etiquetas para mantener la estética hexagonal
+      while (labels.length < 6) {
+        labels.push(`Placeholder ${labels.length + 1}`);
+        data.push(0);
+      }
+
+      // Destruir gráfico previo si existe
+      if (window.myRadarChart) {
+        window.myRadarChart.destroy();
+      }
+
+      // Crear nuevo gráfico
+      window.myRadarChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Horas jugadas por género',
+              data: data,
+              backgroundColor: 'rgba(255, 99, 132, 0.2)',
+              borderColor: 'rgba(255, 99, 132, 1)',
+              borderWidth: 2
+            }
+          ]
+        },
+        options: {
+          plugins: {
+            legend: {
+              display: true
+            }
+          },
+          scales: {
+            r: {
+              angleLines: {
+                color: '#3e5361'
+              },
+              grid: {
+                color: '#3e5361'
+              },
+              ticks: {
+                display: false
+              },
+              suggestedMin: 0,
+              suggestedMax: Math.max(...data, 100)
+            }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
